@@ -1,7 +1,8 @@
-package com.example.pulsefit;
+package com.example.pulsefit.activities;
 
 import android.os.Bundle;
 
+import com.example.pulsefit.R;
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;

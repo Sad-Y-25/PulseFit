@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark_navy"> <ImageView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:src="@drawable/bg_pulsefit"
+    android:scaleType="centerCrop" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingBottom="48dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGoToRegister"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginBottom="16dp"
+            android:text="REJOINDRE LE CLUB"
+            android:textColor="@color/bg_dark_navy"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/vert_neon"
+            app:cornerRadius="30dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGoToLogin"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="J'AI DÉJÀ UN COMPTE"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/glass_white"
+            app:cornerRadius="30dp"
+            app:strokeColor="#33FFFFFF"
+            app:strokeWidth="1dp" />
+
+    </LinearLayout>
+</RelativeLayout>

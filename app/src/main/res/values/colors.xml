@@ -2,4 +2,11 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="bg_dark_navy">#233554</color>
+    <color name="bleu_electrique">#005BFF</color>
+    <color name="vert_neon">#39FF14</color>
+    <color name="text_gris_clair">#A8B2D1</color>
+
+    <color name="glass_white">#1AFFFFFF</color>
 </resources>
