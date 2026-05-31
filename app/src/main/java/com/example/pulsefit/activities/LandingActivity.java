@@ -19,6 +19,16 @@ public class LandingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
+        com.example.pulsefit.utils.SessionManager session = new com.example.pulsefit.utils.SessionManager(this);
+        if (session.isLoggedIn()) {
+            // L'utilisateur est déjà connecté, on l'envoie au Dashboard directement
+            Intent intent = new Intent(LandingActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish(); // On ferme la LandingActivity
+            return; // On arrête l'exécution de cette page
+        }
+
         // 1. Activer le mode immersif (Edge-to-Edge) pour que l'image passe sous la barre de statut
         Window window = getWindow();
         window.setFlags(

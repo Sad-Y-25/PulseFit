@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.pulsefit.R;
 import com.example.pulsefit.database.DatabaseHelper;
+import com.example.pulsefit.utils.SessionManager; // <-- Nouvel import pour la session
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -57,8 +58,15 @@ public class RegisterActivity extends AppCompatActivity {
 
                     if (isInserted) {
                         Toast.makeText(RegisterActivity.this, "Inscription réussie !", Toast.LENGTH_SHORT).show();
-                        // Redirection vers la page de connexion
-                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+
+                        // --- SAUVEGARDE DE LA SESSION AUTOMATIQUE ---
+                        SessionManager session = new SessionManager(RegisterActivity.this);
+                        session.createLoginSession(email);
+                        // ----------------------------------------------
+
+                        // Redirection directe vers le Dashboard (MainActivity)
+                        Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                         finish(); // Ferme la page d'inscription
                     } else {

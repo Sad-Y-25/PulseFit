@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.pulsefit.R;
 import com.example.pulsefit.database.DatabaseHelper;
+import com.example.pulsefit.utils.SessionManager; // <-- Import du gestionnaire de session
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -58,6 +59,11 @@ public class LoginActivity extends AppCompatActivity {
 
                     if (isValid) {
                         Toast.makeText(LoginActivity.this, "Connexion réussie !", Toast.LENGTH_SHORT).show();
+
+                        // --- SAUVEGARDE DE LA SESSION ---
+                        SessionManager session = new SessionManager(LoginActivity.this);
+                        session.createLoginSession(email);
+                        // ---------------------------------
 
                         // Redirection vers le Dashboard (MainActivity)
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
