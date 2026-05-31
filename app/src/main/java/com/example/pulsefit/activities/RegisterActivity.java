@@ -64,11 +64,13 @@ public class RegisterActivity extends AppCompatActivity {
                         session.createLoginSession(email);
                         // ----------------------------------------------
 
-                        // Redirection directe vers le Dashboard (MainActivity)
-                        Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+                        // ...
+                        // Redirection directe vers le Setup (AVANT: MainActivity.class)
+                        Intent intent = new Intent(RegisterActivity.this, SetupActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
-                        finish(); // Ferme la page d'inscription
+                        finish();
+
                     } else {
                         Toast.makeText(RegisterActivity.this, "Erreur lors de l'inscription", Toast.LENGTH_SHORT).show();
                     }

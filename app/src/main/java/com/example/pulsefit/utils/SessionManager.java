@@ -39,4 +39,9 @@ public class SessionManager {
         editor.remove(KEY_EMAIL); // On supprime l'email
         editor.commit(); // IMPORTANT : On utilise commit() qui efface instantanément au lieu de apply()
     }
+
+    // Récupérer l'email de l'utilisateur connecté
+    public String getUserEmail() {
+        return prefs.getString(KEY_EMAIL, null);
+    }
 }

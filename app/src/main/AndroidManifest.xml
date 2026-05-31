@@ -32,5 +32,10 @@
         <activity android:name=".activities.RegisterActivity" android:exported="false" />
 
         <activity android:name=".activities.WorkoutsActivity" android:exported="false" />
+        <activity
+            android:name=".activities.ProfileActivity"
+            android:exported="false" />
+
+        <activity android:name=".activities.SetupActivity" android:exported="false" />
     </application>
 </manifest>
