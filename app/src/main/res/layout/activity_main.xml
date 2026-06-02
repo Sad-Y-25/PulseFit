@@ -150,6 +150,58 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Mot du Coach IA -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="#20FFFFFF"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/vert_neon"
+            android:layout_marginBottom="24dp">
+            
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+                
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+                    
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_dialog_info"
+                        app:tint="@color/vert_neon"
+                        android:layout_marginEnd="8dp"/>
+                        
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="MOT DU COACH IA"
+                        android:textColor="@color/vert_neon"
+                        android:textSize="12sp"
+                        android:fontFamily="sans-serif-black"
+                        android:letterSpacing="0.1"/>
+                </LinearLayout>
+                
+                <TextView
+                    android:id="@+id/tvAiQuote"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="&quot;Le succès commence par la discipline. Chaque séance vous rapproche de votre objectif.&quot;"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="italic"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -160,35 +212,58 @@
             android:letterSpacing="0.1"
             android:layout_marginBottom="16dp"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnWorkouts"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:text="MES ENTRAÎNEMENTS"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            android:fontFamily="sans-serif-black"
-            android:letterSpacing="0.05"
-            app:backgroundTint="#40000000"
-            app:cornerRadius="24dp"
-            app:strokeColor="@color/vert_neon"
-            app:strokeWidth="1.5dp"
-            android:layout_marginBottom="16dp"/>
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="false">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnWorkouts"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="64dp"
+                android:text="RÉSERVER"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                app:icon="@android:drawable/ic_menu_agenda"
+                app:iconTint="@color/white"
+                app:backgroundTint="#40000000"
+                app:strokeColor="@color/bleu_electrique"
+                app:strokeWidth="1.5dp"
+                app:cornerRadius="16dp"
+                android:layout_marginEnd="8dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnProfile"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="64dp"
+                android:text="PROFIL"
+                android:textColor="@color/black"
+                android:textSize="14sp"
+                app:icon="@android:drawable/ic_menu_myplaces"
+                app:iconTint="@color/black"
+                app:backgroundTint="@color/vert_neon"
+                app:cornerRadius="16dp"
+                android:layout_marginStart="8dp"/>
+        </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnProfile"
+            android:id="@+id/btnLocation"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:text="MON PROFIL"
+            android:layout_height="64dp"
+            android:layout_marginTop="16dp"
+            android:text="TROUVER LE CLUB"
             android:textColor="@color/white"
-            android:textSize="16sp"
-            android:fontFamily="sans-serif-black"
-            android:letterSpacing="0.05"
+            android:textSize="14sp"
+            app:icon="@android:drawable/ic_dialog_map"
+            app:iconTint="@color/white"
             app:backgroundTint="#40000000"
-            app:cornerRadius="24dp"
             app:strokeColor="@color/bleu_electrique"
-            app:strokeWidth="1.5dp" />
-
+            app:strokeWidth="1.5dp"
+            app:cornerRadius="16dp"/>
     </LinearLayout>
-</ScrollView>
+    </ScrollView>
+
 </RelativeLayout>

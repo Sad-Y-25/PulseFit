@@ -1,36 +1,70 @@
 package com.example.pulsefit.activities;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.example.pulsefit.R;
 import com.example.pulsefit.database.DatabaseHelper;
 import com.example.pulsefit.utils.SessionManager;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    private ImageView btnBack;
-    private TextView tvProfileName, tvProfileEmail;
-    private TextInputEditText etPoids, etTaille; // Ajout des champs
-    private MaterialButton btnSaveProfile;
+    private ImageView btnBack, ivProfilePhoto;
+    private TextView tvProfileName, tvProfileEmail, tvMemberName;
+    private FloatingActionButton fabTakePhoto;
+    private MaterialButton btnSaveProfile, btnCallAssistance, btnMessageAssistance;
 
     private DatabaseHelper dbHelper;
-    private String userEmail; // On garde l'email en mémoire pour la sauvegarde
+    private String userEmail;
+
+    // Camera Result Launcher
+    private final ActivityResultLauncher<Void> takePictureLauncher = registerForActivityResult(
+            new ActivityResultContracts.TakePicturePreview(),
+            result -> {
+                if (result != null) {
+                    ivProfilePhoto.setImageBitmap(result);
+                    saveImageToInternalStorage(result);
+                }
+            }
+    );
+
+    // Permission Result Launcher
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            isGranted -> {
+                if (isGranted) {
+                    takePictureLauncher.launch(null);
+                } else {
+                    Toast.makeText(this, "Permission caméra refusée", Toast.LENGTH_SHORT).show();
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Activer le mode plein écran
         Window window = getWindow();
         window.setFlags(
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
@@ -39,65 +73,101 @@ public class ProfileActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_profile);
 
-        // Initialisation des vues
         btnBack = findViewById(R.id.btnBackProfile);
         tvProfileName = findViewById(R.id.tvProfileName);
         tvProfileEmail = findViewById(R.id.tvProfileEmail);
-        etPoids = findViewById(R.id.etProfilePoids);     // Connexion avec le XML
-        etTaille = findViewById(R.id.etProfileTaille);   // Connexion avec le XML
+        tvMemberName = findViewById(R.id.tvMemberName);
+        ivProfilePhoto = findViewById(R.id.ivProfilePhoto);
+        fabTakePhoto = findViewById(R.id.fabTakePhoto);
         btnSaveProfile = findViewById(R.id.btnSaveProfile);
+        btnCallAssistance = findViewById(R.id.btnCallAssistance);
+        btnMessageAssistance = findViewById(R.id.btnMessageAssistance);
 
-        // Base de données et Session
         SessionManager session = new SessionManager(this);
         dbHelper = new DatabaseHelper(this);
 
         userEmail = session.getUserEmail();
 
         if (userEmail != null) {
-            // 1. Charger le Nom et l'Email
             String fullName = dbHelper.getUserName(userEmail);
             tvProfileEmail.setText(userEmail);
             if (fullName != null && !fullName.isEmpty()) {
                 tvProfileName.setText(fullName.toUpperCase());
+                tvMemberName.setText(fullName);
             } else {
                 tvProfileName.setText("MEMBRE PULSEFIT");
+                tvMemberName.setText("MEMBRE PULSEFIT");
             }
 
-            // 2. Charger les Statistiques (Poids et Taille)
-            String[] stats = dbHelper.getUserStats(userEmail);
-            if (stats != null && stats.length == 2) {
-                etPoids.setText(stats[0]);  // Pré-remplit le poids
-                etTaille.setText(stats[1]); // Pré-remplit la taille
+            // Load Profile Photo
+            String photoUri = dbHelper.getUserPhoto(userEmail);
+            if (photoUri != null && !photoUri.isEmpty()) {
+                File imgFile = new File(photoUri);
+                if (imgFile.exists()) {
+                    Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                    ivProfilePhoto.setImageBitmap(bitmap);
+                }
             }
         }
 
-        // Action : Bouton Retour
-        btnBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish(); // Retour au Dashboard
-            }
+        btnBack.setOnClickListener(v -> finish());
+
+        // Save Profile Action (Just a placeholder now as stats are removed, but can be reused)
+        btnSaveProfile.setOnClickListener(v -> 
+                Toast.makeText(ProfileActivity.this, "Profil enregistré !", Toast.LENGTH_SHORT).show()
+        );
+
+        // Take Photo Action
+        fabTakePhoto.setOnClickListener(v -> checkCameraPermissionAndLaunch());
+
+        // Contact Actions
+        btnCallAssistance.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_DIAL);
+            intent.setData(Uri.parse("tel:0123456789")); // Dummy Assistance Number
+            startActivity(intent);
         });
 
-        // Action : Bouton Sauvegarder
-        btnSaveProfile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (userEmail != null) {
-                    // On récupère ce que l'utilisateur vient de taper
-                    String nouveauPoids = etPoids.getText().toString().trim();
-                    String nouvelleTaille = etTaille.getText().toString().trim();
-
-                    // On envoie la mise à jour à SQLite
-                    boolean isUpdated = dbHelper.updateUserStats(userEmail, nouveauPoids, nouvelleTaille);
-
-                    if (isUpdated) {
-                        Toast.makeText(ProfileActivity.this, "Statistiques mises à jour avec succès !", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(ProfileActivity.this, "Erreur lors de la sauvegarde", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
+        btnMessageAssistance.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_SENDTO);
+            intent.setData(Uri.parse("mailto:support@pulsefit.com"));
+            intent.putExtra(Intent.EXTRA_SUBJECT, "Demande d'assistance - " + tvProfileName.getText());
+            startActivity(intent);
         });
+    }
+
+    private void checkCameraPermissionAndLaunch() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            takePictureLauncher.launch(null);
+        } else {
+            requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+        }
+    }
+
+    private void saveImageToInternalStorage(Bitmap bitmap) {
+        File directory = getDir("profile_images", MODE_PRIVATE);
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+        File mypath = new File(directory, "profile_" + System.currentTimeMillis() + ".jpg");
+
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(mypath);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            
+            // Save path to DB
+            if (userEmail != null) {
+                dbHelper.updateUserPhoto(userEmail, mypath.getAbsolutePath());
+                Toast.makeText(this, "Photo enregistrée !", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fos != null) fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

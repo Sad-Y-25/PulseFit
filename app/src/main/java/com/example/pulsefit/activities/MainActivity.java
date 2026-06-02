@@ -16,6 +16,7 @@ import com.example.pulsefit.activities.LandingActivity;
 import com.example.pulsefit.database.DatabaseHelper;
 import com.example.pulsefit.utils.SessionManager;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -106,5 +107,12 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        
+        MaterialButton btnLocation = findViewById(R.id.btnLocation);
+        btnLocation.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, LocationActivity.class);
+            startActivity(intent);
+        });
+
     }
 }

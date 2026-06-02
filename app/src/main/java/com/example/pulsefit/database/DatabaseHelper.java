@@ -14,7 +14,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "PulseFit.db";
-    private static final int DATABASE_VERSION = 4; // Version 3 : Ajout de la table Sessions !
+    private static final int DATABASE_VERSION = 5; // Version 5 : Ajout de la photo de profil
 
     // --- Table USERS ---
     private static final String TABLE_USERS = "users";
@@ -24,6 +24,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_PASSWORD = "password";
     private static final String COL_POIDS = "poids";
     private static final String COL_TAILLE = "taille";
+    private static final String COL_PHOTO_URI = "photo_uri";
 
     // --- Table SESSIONS ---
     private static final String TABLE_SESSIONS = "sessions";
@@ -51,7 +52,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_EMAIL + " TEXT UNIQUE, " +
                 COL_PASSWORD + " TEXT, " +
                 COL_POIDS + " TEXT, " +
-                COL_TAILLE + " TEXT)";
+                COL_TAILLE + " TEXT, " +
+                COL_PHOTO_URI + " TEXT)";
         db.execSQL(createTableUsers);
 
         // 2. Création de la table Séances
@@ -88,10 +90,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SESSIONS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_RESERVATIONS);
-        onCreate(db);
+        if (oldVersion < 5) {
+            db.execSQL("ALTER TABLE " + TABLE_USERS + " ADD COLUMN " + COL_PHOTO_URI + " TEXT;");
+        }
     }
 
     // ==========================================
@@ -143,6 +144,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return stats;
+    }
+
+    public boolean updateUserPhoto(String email, String uri) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COL_PHOTO_URI, uri);
+        int result = db.update(TABLE_USERS, values, COL_EMAIL + " = ?", new String[]{email});
+        return result > 0;
+    }
+
+    public String getUserPhoto(String email) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String uri = null;
+        Cursor cursor = db.rawQuery("SELECT " + COL_PHOTO_URI + " FROM " + TABLE_USERS + " WHERE " + COL_EMAIL + " = ?", new String[]{email});
+        if (cursor.moveToFirst()) {
+            uri = cursor.getString(0);
+        }
+        cursor.close();
+        return uri;
     }
 
     // ==========================================

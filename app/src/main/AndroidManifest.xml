@@ -2,6 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,6 +21,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PulseFit"
         tools:targetApi="31">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAvt7u_pGD_7h573l6950fGM9KJsQHRhr0" />
 
         <activity
             android:name=".activities.LandingActivity"
@@ -37,5 +50,20 @@
             android:exported="false" />
 
         <activity android:name=".activities.SetupActivity" android:exported="false" />
+        
+        <activity android:name=".activities.LocationActivity" android:exported="false" />
+
+        <receiver android:name=".receivers.SessionReminderReceiver" android:exported="false" />
+
+        <receiver
+            android:name=".widget.PulseFitWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/pulsefit_widget_info" />
+        </receiver>
     </application>
 </manifest>

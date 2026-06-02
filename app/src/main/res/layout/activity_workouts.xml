@@ -60,13 +60,20 @@
                 android:letterSpacing="0.05"/>
         </LinearLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewWorkouts"
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayoutWorkouts"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingBottom="40dp"
-            tools:listitem="@layout/item_workout" />
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            app:tabTextColor="#B3FFFFFF"
+            app:tabSelectedTextColor="@color/vert_neon"
+            app:tabIndicatorColor="@color/vert_neon"
+            app:tabIndicatorHeight="3dp"/>
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPagerWorkouts"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
     </LinearLayout>
 </RelativeLayout>

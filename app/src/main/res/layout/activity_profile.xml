@@ -74,14 +74,42 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:padding="32dp">
+                android:padding="24dp">
 
-                <ImageView
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:src="@android:drawable/ic_menu_myplaces"
-                    app:tint="@color/bleu_electrique"
-                    android:layout_marginBottom="16dp"/>
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp">
+                    
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        app:cardCornerRadius="50dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/vert_neon"
+                        app:strokeWidth="2dp">
+                        
+                        <ImageView
+                            android:id="@+id/ivProfilePhoto"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:src="@android:drawable/ic_menu_myplaces"
+                            android:scaleType="centerCrop"/>
+                    </com.google.android.material.card.MaterialCardView>
+                    
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/fabTakePhoto"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@+id/ivProfilePhoto"
+                        android:layout_alignEnd="@+id/ivProfilePhoto"
+                        android:layout_marginEnd="-8dp"
+                        android:layout_marginBottom="-8dp"
+                        app:fabCustomSize="40dp"
+                        android:src="@android:drawable/ic_menu_camera"
+                        app:backgroundTint="@color/bleu_electrique"
+                        app:tint="@color/white" />
+                </RelativeLayout>
 
                 <TextView
                     android:id="@+id/tvProfileName"
@@ -104,15 +132,74 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Digital Member Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="#20FFFFFF"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/vert_neon"
+            android:layout_marginBottom="24dp">
+            
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:gravity="center_vertical">
+                
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CARTE MEMBRE"
+                        android:textColor="@color/vert_neon"
+                        android:textSize="12sp"
+                        android:fontFamily="sans-serif-black"/>
+                        
+                    <TextView
+                        android:id="@+id/tvMemberName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Nom du Membre"
+                        android:textColor="@color/white"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="4dp"/>
+                        
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ID: PF-987654"
+                        android:textColor="#B3FFFFFF"
+                        android:textSize="12sp"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+                
+                <ImageView
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:src="@android:drawable/ic_dialog_map"
+                    app:tint="@color/white"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="MES STATISTIQUES"
+            android:text="ASSISTANCE / EQUIPE"
             android:textColor="#B3FFFFFF"
             android:textSize="14sp"
             android:fontFamily="sans-serif-black"
             android:letterSpacing="0.1"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="12dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -120,52 +207,35 @@
             android:orientation="horizontal"
             android:baselineAligned="false">
 
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCallAssistance"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:textColorHint="#B3FFFFFF"
-                app:boxBackgroundColor="#1AFFFFFF"
-                app:boxStrokeColor="@color/bleu_electrique"
-                app:hintTextColor="@color/bleu_electrique"
-                app:boxCornerRadiusTopStart="16dp"
-                app:boxCornerRadiusTopEnd="16dp"
-                app:boxCornerRadiusBottomStart="16dp"
-                app:boxCornerRadiusBottomEnd="16dp"
-                android:layout_marginEnd="8dp">
+                android:layout_height="64dp"
+                android:text="APPELER"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                app:icon="@android:drawable/ic_menu_call"
+                app:iconTint="@color/white"
+                app:backgroundTint="#40000000"
+                app:strokeColor="@color/bleu_electrique"
+                app:strokeWidth="1.5dp"
+                app:cornerRadius="16dp"
+                android:layout_marginEnd="8dp"/>
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etProfilePoids"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Poids (kg)"
-                    android:inputType="numberDecimal"
-                    android:textColor="@color/white"/>
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMessageAssistance"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:textColorHint="#B3FFFFFF"
-                app:boxBackgroundColor="#1AFFFFFF"
-                app:boxStrokeColor="@color/bleu_electrique"
-                app:hintTextColor="@color/bleu_electrique"
-                app:boxCornerRadiusTopStart="16dp"
-                app:boxCornerRadiusTopEnd="16dp"
-                app:boxCornerRadiusBottomStart="16dp"
-                app:boxCornerRadiusBottomEnd="16dp"
-                android:layout_marginStart="8dp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etProfileTaille" android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Taille (cm)"
-                    android:inputType="number"
-                    android:textColor="@color/white"/>
-            </com.google.android.material.textfield.TextInputLayout>
+                android:layout_height="64dp"
+                android:text="EMAIL"
+                android:textColor="@color/black"
+                android:textSize="14sp"
+                app:icon="@android:drawable/ic_dialog_email"
+                app:iconTint="@color/black"
+                app:backgroundTint="@color/vert_neon"
+                app:cornerRadius="16dp"
+                android:layout_marginStart="8dp"/>
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
