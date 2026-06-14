@@ -4,11 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
-    app:cardBackgroundColor="@color/glass_white"
+    app:cardBackgroundColor="#80000000"
     app:cardCornerRadius="16dp"
     app:cardElevation="0dp"
     app:strokeColor="@color/bleu_electrique"
-    app:strokeWidth="1dp">
+    app:strokeWidth="1.5dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -25,7 +25,8 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/btnBook"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginEnd="8dp"/>
 
         <TextView
             android:id="@+id/tvCoach"
@@ -69,6 +70,20 @@
             android:textStyle="bold"
             app:backgroundTint="@color/vert_neon"
             app:cornerRadius="20dp"
+            app:layout_constraintBottom_toBottomOf="@+id/tvCoach"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tvSessionTitle" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Annuler"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            app:backgroundTint="#FF4444"
+            app:cornerRadius="20dp"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@+id/tvCoach"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/tvSessionTitle" />

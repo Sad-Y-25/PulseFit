@@ -114,5 +114,11 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        MaterialButton btnLeaderboard = findViewById(R.id.btnLeaderboard);
+        btnLeaderboard.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, LeaderboardActivity.class);
+            startActivity(intent);
+        });
+
     }
 }

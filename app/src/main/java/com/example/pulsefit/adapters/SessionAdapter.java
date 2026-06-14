@@ -54,7 +54,19 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
 
         if (isReservedOnly) {
             holder.btnBook.setVisibility(View.GONE);
+            holder.btnCancel.setVisibility(View.VISIBLE);
+            holder.btnCancel.setOnClickListener(v -> {
+                new AlertDialog.Builder(context, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                        .setTitle("Annuler la réservation")
+                        .setMessage("Êtes-vous sûr de vouloir annuler votre séance : " + session.getTitre() + " ?")
+                        .setPositiveButton("Oui", (dialog, which) -> {
+                            new CancelSessionTask(context, session, v, holder.getAdapterPosition()).execute();
+                        })
+                        .setNegativeButton("Non", null)
+                        .show();
+            });
         } else {
+            holder.btnCancel.setVisibility(View.GONE);
             holder.btnBook.setVisibility(View.VISIBLE);
             holder.btnBook.setOnClickListener(v -> {
                 // Launch AsyncTask for booking
@@ -83,7 +95,7 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
 
     public static class SessionViewHolder extends RecyclerView.ViewHolder {
         TextView tvSessionTitle, tvCoach, tvDate, tvSpots;
-        MaterialButton btnBook;
+        MaterialButton btnBook, btnCancel;
 
         public SessionViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -92,6 +104,7 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
             tvDate = itemView.findViewById(R.id.tvDate);
             tvSpots = itemView.findViewById(R.id.tvSpots);
             btnBook = itemView.findViewById(R.id.btnBook);
+            btnCancel = itemView.findViewById(R.id.btnCancel);
         }
     }
 
@@ -167,6 +180,57 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    private class CancelSessionTask extends AsyncTask<Void, Void, Boolean> {
+        private WeakReference<Context> contextRef;
+        private Session session;
+        private WeakReference<View> viewRef;
+        private int position;
+
+        CancelSessionTask(Context context, Session session, View view, int position) {
+            this.contextRef = new WeakReference<>(context);
+            this.session = session;
+            this.viewRef = new WeakReference<>(view);
+            this.position = position;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            Context context = contextRef.get();
+            if (context == null) return false;
+
+            DatabaseHelper dbHelper = new DatabaseHelper(context);
+            SessionManager sessionManager = new SessionManager(context);
+            
+            String email = sessionManager.getUserEmail();
+            if (email == null) return false;
+
+            return dbHelper.deleteReservation(email, session.getId());
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            Context context = contextRef.get();
+            View view = viewRef.get();
+            
+            if (context != null && view != null) {
+                if (success) {
+                    if (position >= 0 && position < sessionList.size()) {
+                        sessionList.remove(position);
+                        notifyItemRemoved(position);
+                        notifyItemRangeChanged(position, sessionList.size());
+                    }
+                    
+                    Snackbar snackbar = Snackbar.make(view, "Réservation annulée.", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(context, R.color.vert_neon));
+                    snackbar.setTextColor(ContextCompat.getColor(context, R.color.black));
+                    snackbar.show();
+                } else {
+                    Toast.makeText(context, "Erreur lors de l'annulation.", Toast.LENGTH_SHORT).show();
+                }
             }
         }
     }

@@ -250,6 +250,21 @@
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLeaderboard"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginTop="16dp"
+            android:text="CLASSEMENT (GAMIFICATION)"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            app:icon="@android:drawable/btn_star_big_on"
+            app:iconTint="#FFD700"
+            app:backgroundTint="#40000000"
+            app:strokeColor="#FFD700"
+            app:strokeWidth="1.5dp"
+            app:cornerRadius="16dp"/>
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLocation"
             android:layout_width="match_parent"
             android:layout_height="64dp"

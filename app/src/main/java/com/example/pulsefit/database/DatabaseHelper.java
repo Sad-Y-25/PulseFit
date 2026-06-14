@@ -210,6 +210,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
+    // Supprimer une réservation
+    public boolean deleteReservation(String email, int sessionId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int result = db.delete(TABLE_RESERVATIONS, COL_RES_EMAIL + "=? AND " + COL_RES_SESSION_ID + "=?", new String[]{email, String.valueOf(sessionId)});
+        return result > 0;
+    }
+
     // 1. Compter le nombre de réservations de l'utilisateur
     public int getReservationCount(String email) {
         SQLiteDatabase db = this.getReadableDatabase();

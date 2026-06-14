@@ -12,6 +12,12 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.app.Dialog;
+import android.view.ViewGroup;
+
+import com.google.zxing.BarcodeFormat;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
+import com.google.android.material.card.MaterialCardView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -111,6 +117,9 @@ public class ProfileActivity extends AppCompatActivity {
         }
 
         btnBack.setOnClickListener(v -> finish());
+        
+        MaterialCardView cvMemberCard = findViewById(R.id.cvMemberCard);
+        cvMemberCard.setOnClickListener(v -> showQRCodeDialog());
 
         // Save Profile Action (Just a placeholder now as stats are removed, but can be reused)
         btnSaveProfile.setOnClickListener(v -> 
@@ -169,5 +178,35 @@ public class ProfileActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void showQRCodeDialog() {
+        if (userEmail == null || userEmail.isEmpty()) {
+            Toast.makeText(this, "Erreur: Utilisateur non trouvé", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_qr_code);
+        
+        // Ensure the dialog has a clean white background and fits well
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+
+        ImageView ivQRCode = dialog.findViewById(R.id.ivQRCode);
+
+        try {
+            BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
+            String qrContent = "PULSEFIT-ID: " + userEmail;
+            Bitmap bitmap = barcodeEncoder.encodeBitmap(qrContent, BarcodeFormat.QR_CODE, 800, 800);
+            ivQRCode.setImageBitmap(bitmap);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Erreur lors de la génération du QR Code", Toast.LENGTH_SHORT).show();
+        }
+
+        dialog.show();
     }
 }
