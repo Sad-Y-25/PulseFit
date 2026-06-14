@@ -28,28 +28,28 @@ public class RetrofitClient {
                                 "    \"id\": 1,\n" +
                                 "    \"titre\": \"CrossFit Intense\",\n" +
                                 "    \"coach\": \"Alex\",\n" +
-                                "    \"date\": \"Aujourd'hui, 18:00\",\n" +
+                                "    \"date\": \"2026-06-14 18:00\",\n" +
                                 "    \"places\": 5\n" +
                                 "  },\n" +
                                 "  {\n" +
                                 "    \"id\": 2,\n" +
                                 "    \"titre\": \"Yoga Zen\",\n" +
                                 "    \"coach\": \"Sophie\",\n" +
-                                "    \"date\": \"Demain, 07:00\",\n" +
+                                "    \"date\": \"2026-06-15 07:00\",\n" +
                                 "    \"places\": 12\n" +
                                 "  },\n" +
                                 "  {\n" +
                                 "    \"id\": 3,\n" +
                                 "    \"titre\": \"Boxe Thaï\",\n" +
                                 "    \"coach\": \"Marc\",\n" +
-                                "    \"date\": \"Demain, 19:30\",\n" +
+                                "    \"date\": \"2026-06-15 19:30\",\n" +
                                 "    \"places\": 2\n" +
                                 "  },\n" +
                                 "  {\n" +
                                 "    \"id\": 4,\n" +
                                 "    \"titre\": \"Pilates Core\",\n" +
                                 "    \"coach\": \"Emma\",\n" +
-                                "    \"date\": \"Jeu, 12:15\",\n" +
+                                "    \"date\": \"2026-06-17 12:15\",\n" +
                                 "    \"places\": 8\n" +
                                 "  }\n" +
                                 "]";

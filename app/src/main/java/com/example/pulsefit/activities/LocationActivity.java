@@ -85,14 +85,19 @@ public class LocationActivity extends AppCompatActivity implements OnMapReadyCal
 
         checkLocationPermission();
 
-        // PulseFit HQ coordinates (e.g., center of Paris)
-        LatLng pulseFitHQ = new LatLng(48.8566, 2.3522);
-        
-        mMap.addMarker(new MarkerOptions()
-                .position(pulseFitHQ)
-                .title("PulseFit HQ"));
-                
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pulseFitHQ, 15f));
+        // Fitness Park markers in Paris
+        LatLng fpRepublique = new LatLng(48.8672, 2.3653); // Fitness Park République
+        LatLng fpAlesia = new LatLng(48.8285, 2.3275); // Fitness Park Alésia
+        LatLng fpBatignolles = new LatLng(48.8895, 2.3168); // Fitness Park Batignolles
+        LatLng fpBagnolet = new LatLng(48.8601, 2.4005); // Fitness Park Bagnolet
+
+        mMap.addMarker(new MarkerOptions().position(fpRepublique).title("Fitness Park République"));
+        mMap.addMarker(new MarkerOptions().position(fpAlesia).title("Fitness Park Alésia"));
+        mMap.addMarker(new MarkerOptions().position(fpBatignolles).title("Fitness Park Batignolles"));
+        mMap.addMarker(new MarkerOptions().position(fpBagnolet).title("Fitness Park Bagnolet"));
+
+        // Center on Paris
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(48.8566, 2.3522), 12f));
     }
 
     private void checkLocationPermission() {

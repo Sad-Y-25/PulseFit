@@ -132,17 +132,17 @@
                     android:orientation="vertical"
                     android:gravity="center">
                     <TextView
-                        android:id="@+id/tvTotalTime"
+                        android:id="@+id/tvTotalCalories"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0h"
+                        android:text="0"
                         android:textColor="@color/bleu_electrique"
                         android:textSize="36sp"
                         android:fontFamily="sans-serif-black"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Temps total"
+                        android:text="Calories brûlées"
                         android:textColor="#B3FFFFFF"
                         android:fontFamily="sans-serif-medium"
                         android:textSize="12sp"/>

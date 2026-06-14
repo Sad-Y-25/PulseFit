@@ -18,6 +18,12 @@ import com.example.pulsefit.utils.SessionManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import java.util.concurrent.TimeUnit;
+import com.example.pulsefit.workers.MigrationWorker;
+
 public class MainActivity extends AppCompatActivity {
 
     private ImageView btnLogout;
@@ -36,13 +42,21 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        // Schedule Automated History Migration
+        PeriodicWorkRequest migrationRequest = new PeriodicWorkRequest.Builder(MigrationWorker.class, 1, TimeUnit.HOURS).build();
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "HistoryMigrationWork",
+                ExistingPeriodicWorkPolicy.KEEP,
+                migrationRequest
+        );
+
         // 1. Initialisation des composants
         ImageView btnLogout = findViewById(R.id.btnLogout);
         MaterialButton btnWorkouts = findViewById(R.id.btnWorkouts);
         MaterialButton btnProfile = findViewById(R.id.btnProfile);
         TextView tvGreeting = findViewById(R.id.tvGreeting); // Notre texte
         TextView tvTotalSessions = findViewById(R.id.tvTotalSessions);
-        TextView tvTotalTime = findViewById(R.id.tvTotalTime);
+        TextView tvTotalCalories = findViewById(R.id.tvTotalCalories);
 
         // 2. Récupérer les infos de l'utilisateur
         SessionManager session = new SessionManager(this);
@@ -58,17 +72,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        if (userEmail != null) {
-            // 1. On récupère les valeurs depuis SQLite
-            int totalSessions = dbHelper.getReservationCount(userEmail);
-            double totalHours = dbHelper.getTotalReservedTime(userEmail);
-
-            // 2. On affiche les valeurs
-            tvTotalSessions.setText(String.valueOf(totalSessions));
-
-            // Format pour n'afficher qu'un seul chiffre après la virgule (ex: 1.5h)
-            tvTotalTime.setText(String.format(java.util.Locale.getDefault(), "%.1fh", totalHours));
-        }
+        updateDashboardStats();
+        // Déconnexion
         // Déconnexion
         // Action : Déconnexion
         btnLogout.setOnClickListener(new View.OnClickListener() {
@@ -120,5 +125,32 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Force migration and stat update so user sees it instantly when returning
+        updateDashboardStats();
+    }
+
+    private void updateDashboardStats() {
+        SessionManager session = new SessionManager(this);
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
+        String userEmail = session.getUserEmail();
+
+        if (userEmail != null) {
+            // Force an immediate migration on resume so tests work perfectly!
+            dbHelper.migratePastReservations();
+
+            int totalSessions = dbHelper.getReservationCount(userEmail);
+            int totalCalories = dbHelper.getTotalCaloriesBurned(userEmail);
+
+            TextView tvTotalSessions = findViewById(R.id.tvTotalSessions);
+            TextView tvTotalCalories = findViewById(R.id.tvTotalCalories);
+
+            tvTotalSessions.setText(String.valueOf(totalSessions));
+            tvTotalCalories.setText(String.valueOf(totalCalories));
+        }
     }
 }

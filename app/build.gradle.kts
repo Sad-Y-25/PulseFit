@@ -49,6 +49,9 @@ dependencies {
     // ZXing for QR Code
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 
+    // WorkManager
+    implementation("androidx.work:work-runtime:2.9.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

@@ -14,7 +14,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "PulseFit.db";
-    private static final int DATABASE_VERSION = 5; // Version 5 : Ajout de la photo de profil
+    private static final int DATABASE_VERSION = 6; // Version 6 : Sync Retrofit & History
 
     // --- Table USERS ---
     private static final String TABLE_USERS = "users";
@@ -30,8 +30,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_SESSIONS = "sessions";
     private static final String COL_SESSION_ID = "id";
     private static final String COL_SESSION_TITRE = "titre";
-    private static final String COL_SESSION_DUREE = "duree";
-    private static final String COL_SESSION_DIFFICULTE = "difficulte";
+    private static final String COL_SESSION_COACH = "coach";
+    private static final String COL_SESSION_DATE = "date";
+    private static final String COL_SESSION_PLACES = "places";
+
+    // --- Table HISTORY (NOUVEAU) ---
+    private static final String TABLE_HISTORY = "history";
+    private static final String COL_HIST_ID = "id";
+    private static final String COL_HIST_EMAIL = "user_email";
+    private static final String COL_HIST_ACTIVITY = "activity_name";
+    private static final String COL_HIST_DURATION = "duration";
+    private static final String COL_HIST_CALORIES = "calories";
 
     // --- Table RESERVATIONS (NOUVEAU) ---
     private static final String TABLE_RESERVATIONS = "reservations";
@@ -58,10 +67,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         // 2. Création de la table Séances
         String createTableSessions = "CREATE TABLE " + TABLE_SESSIONS + " (" +
-                COL_SESSION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_SESSION_ID + " INTEGER PRIMARY KEY, " +
                 COL_SESSION_TITRE + " TEXT, " +
-                COL_SESSION_DUREE + " TEXT, " +
-                COL_SESSION_DIFFICULTE + " TEXT)";
+                COL_SESSION_COACH + " TEXT, " +
+                COL_SESSION_DATE + " TEXT, " +
+                COL_SESSION_PLACES + " INTEGER)";
         db.execSQL(createTableSessions);
 
         // 3. Création de la table Réservations
@@ -71,27 +81,40 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_RES_SESSION_ID + " INTEGER)";
         db.execSQL(createTableReservations);
 
-        // 4. Insertion des Séances par défaut (Pour que la liste ne soit pas vide au début)
-        insererSeanceDefaut(db, "Force : Haut du corps", "45 min", "🔥 Intense");
-        insererSeanceDefaut(db, "Cardio HIIT & Abdos", "30 min", "⚡ Explosif");
-        insererSeanceDefaut(db, "Mobilité & Étirements", "20 min", "🧘 Calme");
-        insererSeanceDefaut(db, "Leg Day : Puissance", "60 min", "🦍 Brutal");
-        insererSeanceDefaut(db, "Core Challenge", "15 min", "🔥 Intense");
-        insererSeanceDefaut(db, "Full Body Express", "25 min", "⚡ Explosif");
+        // 4. Création de la table History
+        String createTableHistory = "CREATE TABLE " + TABLE_HISTORY + " (" +
+                COL_HIST_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_HIST_EMAIL + " TEXT, " +
+                COL_HIST_ACTIVITY + " TEXT, " +
+                COL_HIST_DURATION + " INTEGER, " +
+                COL_HIST_CALORIES + " INTEGER)";
+        db.execSQL(createTableHistory);
     }
 
-    private void insererSeanceDefaut(SQLiteDatabase db, String titre, String duree, String difficulte) {
-        ContentValues values = new ContentValues();
-        values.put(COL_SESSION_TITRE, titre);
-        values.put(COL_SESSION_DUREE, duree);
-        values.put(COL_SESSION_DIFFICULTE, difficulte);
-        db.insert(TABLE_SESSIONS, null, values);
-    }
+
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion < 5) {
             db.execSQL("ALTER TABLE " + TABLE_USERS + " ADD COLUMN " + COL_PHOTO_URI + " TEXT;");
+        }
+        if (oldVersion < 6) {
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_SESSIONS);
+            String createTableSessions = "CREATE TABLE " + TABLE_SESSIONS + " (" +
+                    COL_SESSION_ID + " INTEGER PRIMARY KEY, " +
+                    COL_SESSION_TITRE + " TEXT, " +
+                    COL_SESSION_COACH + " TEXT, " +
+                    COL_SESSION_DATE + " TEXT, " +
+                    COL_SESSION_PLACES + " INTEGER)";
+            db.execSQL(createTableSessions);
+
+            String createTableHistory = "CREATE TABLE " + TABLE_HISTORY + " (" +
+                    COL_HIST_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    COL_HIST_EMAIL + " TEXT, " +
+                    COL_HIST_ACTIVITY + " TEXT, " +
+                    COL_HIST_DURATION + " INTEGER, " +
+                    COL_HIST_CALORIES + " INTEGER)";
+            db.execSQL(createTableHistory);
         }
     }
 
@@ -165,26 +188,61 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return uri;
     }
 
-    // ==========================================
-    // NOUVELLE MÉTHODE : LECTURE DES SÉANCES
-    // ==========================================
-    public List<Workout> getAllWorkouts() {
-        List<Workout> workoutList = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_SESSIONS, null);
+    // Mettre à jour SQLite depuis Retrofit
+    public void clearAllSessions() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_SESSIONS, null, null);
+    }
+
+    public boolean insertSessionWithId(com.example.pulsefit.models.Session session) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COL_SESSION_ID, session.getId());
+        values.put(COL_SESSION_TITRE, session.getTitre());
+        values.put(COL_SESSION_COACH, session.getCoach());
+        values.put(COL_SESSION_DATE, session.getDate());
+        values.put(COL_SESSION_PLACES, session.getPlaces());
+        long result = db.insert(TABLE_SESSIONS, null, values);
+        return result != -1;
+    }
+
+    public void migratePastReservations() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT r.id, r.user_email, s.id, s.titre, s.date FROM " + TABLE_RESERVATIONS + " r INNER JOIN " + TABLE_SESSIONS + " s ON r.session_id = s.id";
+        Cursor cursor = db.rawQuery(query, null);
+
+        long currentTime = System.currentTimeMillis();
+        java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault());
 
         if (cursor.moveToFirst()) {
             do {
-                int id = cursor.getInt(0); // On récupère l'ID
-                String titre = cursor.getString(1);
-                String duree = cursor.getString(2);
-                String difficulte = cursor.getString(3);
+                int resId = cursor.getInt(0);
+                String email = cursor.getString(1);
+                String titre = cursor.getString(3);
+                String dateStr = cursor.getString(4); // Exemple: "2026-06-15 10:00" ou similaire.
 
-                workoutList.add(new Workout(id, titre, duree + " • " + difficulte));
+                try {
+                    // Simplification: On va parse la date pour voir si elle est passée.
+                    java.util.Date sessionDate = format.parse(dateStr);
+                    if (sessionDate != null && sessionDate.getTime() < currentTime) {
+                        // La séance est passée, on la migre!
+                        // On assume 60 mins -> 600 calories (60 * 10)
+                        ContentValues values = new ContentValues();
+                        values.put(COL_HIST_EMAIL, email);
+                        values.put(COL_HIST_ACTIVITY, titre);
+                        values.put(COL_HIST_DURATION, 60);
+                        values.put(COL_HIST_CALORIES, 600);
+                        db.insert(TABLE_HISTORY, null, values);
+
+                        // Supprimer la réservation
+                        db.delete(TABLE_RESERVATIONS, COL_RES_ID + "=?", new String[]{String.valueOf(resId)});
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             } while (cursor.moveToNext());
         }
         cursor.close();
-        return workoutList;
     }
 
 
@@ -229,29 +287,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return count;
     }
 
-    // 2. Calculer le temps total (en heures)
-    public double getTotalReservedTime(String email) {
+    // 2. Calculer le total des calories brûlées
+    public int getTotalCaloriesBurned(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
-        // On fait une jointure (JOIN) pour lire la "duree" dans la table sessions grâce à l'ID de la réservation
-        String query = "SELECT s.duree FROM sessions s INNER JOIN reservations r ON s.id = r.session_id WHERE r.user_email = ?";
-        Cursor cursor = db.rawQuery(query, new String[]{email});
-
-        int totalMinutes = 0;
+        Cursor cursor = db.rawQuery("SELECT SUM(" + COL_HIST_CALORIES + ") FROM " + TABLE_HISTORY + " WHERE " + COL_HIST_EMAIL + " = ?", new String[]{email});
+        int total = 0;
         if (cursor.moveToFirst()) {
-            do {
-                String dureeStr = cursor.getString(0); // Exemple: "45 min"
-                try {
-                    // On extrait uniquement les chiffres du texte (45)
-                    String numberOnly = dureeStr.replaceAll("[^0-9]", "");
-                    totalMinutes += Integer.parseInt(numberOnly);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } while (cursor.moveToNext());
+            total = cursor.getInt(0);
         }
         cursor.close();
-
-        // On convertit les minutes en heures (ex: 90 min = 1.5h)
-        return totalMinutes / 60.0;
+        return total;
     }
 }

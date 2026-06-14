@@ -74,25 +74,7 @@ public class SessionsFragment extends Fragment {
             public void onResponse(Call<List<Session>> call, Response<List<Session>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Session> allSessions = response.body();
-                    List<Session> filteredSessions = new ArrayList<>();
-
-                    DatabaseHelper dbHelper = new DatabaseHelper(getContext());
-                    SessionManager sessionManager = new SessionManager(getContext());
-                    String email = sessionManager.getUserEmail();
-
-                    if (email != null) {
-                        for (Session session : allSessions) {
-                            boolean isReserved = dbHelper.checkReservationExists(email, session.getId());
-                            if (isReservedOnly && isReserved) {
-                                filteredSessions.add(session);
-                            } else if (!isReservedOnly && !isReserved) {
-                                filteredSessions.add(session);
-                            }
-                        }
-                    }
-
-                    sessionAdapter = new SessionAdapter(getContext(), filteredSessions, isReservedOnly);
-                    rvSessions.setAdapter(sessionAdapter);
+                    new SyncSessionsTask(allSessions, getContext(), isReservedOnly, rvSessions).execute();
                 } else {
                     Toast.makeText(getContext(), "Erreur serveur", Toast.LENGTH_SHORT).show();
                 }
@@ -104,5 +86,58 @@ public class SessionsFragment extends Fragment {
                 Toast.makeText(getContext(), "Erreur de connexion", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private static class SyncSessionsTask extends android.os.AsyncTask<Void, Void, List<Session>> {
+        private List<Session> allSessions;
+        private java.lang.ref.WeakReference<android.content.Context> contextRef;
+        private boolean isReservedOnly;
+        private java.lang.ref.WeakReference<RecyclerView> rvRef;
+
+        SyncSessionsTask(List<Session> allSessions, android.content.Context context, boolean isReservedOnly, RecyclerView rvSessions) {
+            this.allSessions = allSessions;
+            this.contextRef = new java.lang.ref.WeakReference<>(context);
+            this.isReservedOnly = isReservedOnly;
+            this.rvRef = new java.lang.ref.WeakReference<>(rvSessions);
+        }
+
+        @Override
+        protected List<Session> doInBackground(Void... voids) {
+            android.content.Context context = contextRef.get();
+            if (context == null) return new ArrayList<>();
+
+            DatabaseHelper dbHelper = new DatabaseHelper(context);
+            SessionManager sessionManager = new SessionManager(context);
+            String email = sessionManager.getUserEmail();
+
+            // Source of Truth Fix: Mirror network to local
+            dbHelper.clearAllSessions();
+            for (Session session : allSessions) {
+                dbHelper.insertSessionWithId(session);
+            }
+
+            List<Session> filteredSessions = new ArrayList<>();
+            if (email != null) {
+                for (Session session : allSessions) {
+                    boolean isReserved = dbHelper.checkReservationExists(email, session.getId());
+                    if (isReservedOnly && isReserved) {
+                        filteredSessions.add(session);
+                    } else if (!isReservedOnly && !isReserved) {
+                        filteredSessions.add(session);
+                    }
+                }
+            }
+            return filteredSessions;
+        }
+
+        @Override
+        protected void onPostExecute(List<Session> filteredSessions) {
+            android.content.Context context = contextRef.get();
+            RecyclerView rv = rvRef.get();
+            if (context != null && rv != null) {
+                SessionAdapter sessionAdapter = new SessionAdapter(context, filteredSessions, isReservedOnly);
+                rv.setAdapter(sessionAdapter);
+            }
+        }
     }
 }
