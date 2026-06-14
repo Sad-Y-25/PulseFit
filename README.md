@@ -17,7 +17,8 @@
 ![Java](https://img.shields.io/badge/Java-Native-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-Local%20DB-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
 ![Material Design](https://img.shields.io/badge/Material%20Design-UI%2FUX-757575?style=for-the-badge&logo=materialdesign&logoColor=white)
-![Status](https://img.shields.io/badge/Status-En%20développement-orange?style=for-the-badge)
+![Retrofit](https://img.shields.io/badge/Retrofit-Network-green?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Version%201.0-blue?style=for-the-badge)
 
 <br/>
 
@@ -29,68 +30,83 @@
 
 ## 🎯 À propos du projet
 
-**PulseFit** est une application Android native conçue pour répondre aux besoins de gestion moderne d'un club sportif. Elle offre une expérience utilisateur fluide, esthétique et interactive, en alliant performance technique et design haut de gamme.
+**PulseFit** est une application Android native conçue pour répondre aux besoins de gestion moderne d'un club sportif (inspirée de grandes chaînes comme Fitness Park). Elle offre une expérience utilisateur fluide, esthétique et interactive, en alliant performance technique et design haut de gamme avec un système UI Dark Mode / Glassmorphism de bout en bout.
 
 Le projet vise à **digitaliser et autonomiser** l'expérience des membres d'un club sportif grâce à trois axes majeurs :
 
 | Axe | Description |
 |-----|-------------|
-| 📅 **Digitalisation des séances** | Consultation, réservation et suivi en temps réel |
-| 🧭 **Interface intuitive** | Standards Material Design pour une navigation fluide |
-| 🏅 **Engagement utilisateur** | Statistiques, badges de progression et Dark Mode |
+| 📅 **Digitalisation des séances** | Consultation synchronisée, réservation et suivi de l'historique |
+| 🧭 **Interface intuitive & Premium** | Standards Material Components, effet Glassmorphism, UI ultra-réactive |
+| 🏅 **Gamification & Engagement** | Suivi dynamique des calories, Leaderboard, et Widget Home Screen |
+
+---
+
+## 📋 Fonctionnalités & Cas d'Utilisation (Use Cases)
+
+### 1. 🔐 Authentification & Onboarding
+- **Création de compte** : Inscription sécurisée stockée en base de données SQLite.
+- **Setup Profil** : Configuration de l'utilisateur (nom, taille, poids) lors de la première connexion.
+- **Connexion persistante** : Utilisation de `SharedPreferences` (SessionManager) pour garder l'utilisateur connecté.
+
+### 2. 🏠 Tableau de Bord (Dashboard)
+- **Suivi en temps réel** : Affiche les compteurs de séances réservées et de **calories totales brûlées**.
+- **Quote motivationnelle** : Un message de motivation pour engager le membre.
+- **Navigation Rapide** : Accès instantané aux modules principaux (Réservation, Profil, Classement, Carte).
+
+### 3. 🏋️ Gestion des Entraînements (Networking + Local)
+- **Synchronisation API (Retrofit)** : Les séances disponibles sont simulées via une API distante (avec Interceptor Retrofit) et synchronisées comme Single Source of Truth vers SQLite (`TABLE_SESSIONS`).
+- **Consultation avec ViewPager2** : Deux onglets fluides : "Sessions Disponibles" et "Mes Réservations".
+- **Réservation intelligente** : Empêche les doublons de réservation.
+
+### 4. 🏆 Gamification (Leaderboard)
+- Un système de **Classement des Membres** basé sur le nombre de calories brûlées.
+- Top 3 mis en évidence visuellement avec un design Premium.
+
+### 5. 👤 Espace Profil Interactif
+- **Identité Numérique (QR Code)** : Génération automatique d'un QR Code unique pour l'accès physique au club.
+- **Photo de profil** : Prise de photo intégrée via l'API Camera d'Android et stockage local avec sauvegarde du path en DB.
+- **Assistance rapide** : Boutons d'action via **Intents Implicites** pour appeler le support ou envoyer un e-mail à l'équipe.
+
+### 6. 🗺️ Géolocalisation (Google Maps)
+- **Localisation des clubs** : Intégration complète de l'API Google Maps avec thème **Dark Mode Map**.
+- Affiche des marqueurs réels pour différentes succursales (ex: Fitness Park République, Alésia, etc.).
+- Permet de se repérer et de centrer la carte sur la position de l'utilisateur (permissions de localisation incluses).
+
+### 7. ⚙️ Tâches en Arrière-Plan (WorkManager & AlarmManager)
+- **Historisation automatique** : Un `MigrationWorker` (WorkManager) tourne toutes les heures en arrière-plan pour transférer automatiquement les séances expirées (passées) depuis les réservations vers `TABLE_HISTORY` et incrémenter les calories brûlées.
+- **Notifications de rappel** : Utilisation de `AlarmManager` et de `BroadcastReceiver` pour planifier des notifications 1 heure avant le début d'une séance réservée.
+
+### 8. 📱 Widget Android
+- Un widget d'écran d'accueil (`PulseFitWidgetProvider`) affichant un récapitulatif ultra-rapide des informations clés sans ouvrir l'application.
 
 ---
 
 ## ⚙️ Architecture Technique
 
-L'application repose sur une architecture en **trois couches** assurant une séparation claire des responsabilités :
+L'application repose sur une architecture robuste MVC/MVVM hybride et respecte la séparation des préoccupations :
 
 ```
 ┌─────────────────────────────────────────┐
 │          PRESENTATION LAYER             │
-│  Login · Dashboard · Profil · Workouts  │
-│       Adapters (RecyclerView)           │
+│  Activities · Fragments · ViewPager2    │
+│  Material Components & Glassmorphism    │
 └──────────────────┬──────────────────────┘
                    │
 ┌──────────────────▼──────────────────────┐
 │            BUSINESS LAYER               │
-│   Session Management (SharedPrefs)      │
-│   Authentification persistante          │
+│   WorkManager (MigrationWorker)         │
+│   Retrofit (Mock API + Interceptor)     │
+│   SessionManager (SharedPreferences)    │
 └──────────────────┬──────────────────────┘
                    │
 ┌──────────────────▼──────────────────────┐
 │              DATA LAYER                 │
-│   SQLite — Utilisateurs · Réservations  │
-│            Historique des séances       │
+│   SQLiteHelper (V6)                     │
+│   tables: users, sessions, reservations,│
+│           history                       │
 └─────────────────────────────────────────┘
 ```
-
----
-
-## 📋 Fonctionnalités Implémentées
-
-### 🔐 Authentification
-Gestion complète des comptes avec persistance de session sécurisée via `SharedPreferences`.
-- Inscription / Connexion / Déconnexion
-- Session persistante entre les lancements
-
-### 🏠 Tableau de Bord
-Vue dynamique calculant en temps réel via des requêtes SQL :
-- Nombre de séances réservées
-- Temps d'entraînement cumulé
-
-### 🏋️ Gestion des Séances
-- Liste dynamique avec `RecyclerView`
-- Filtrage par type d'entraînement
-- Vue détaillée par séance
-
-### 📆 Système de Réservation
-- Popup de confirmation interactive
-- Prévention automatique des **réservations en double**
-
-### 👤 Profil Membre
-- Mise à jour des informations personnelles
-- Suivi dynamique des statistiques physiques (poids / taille / IMC)
 
 ---
 
@@ -99,26 +115,12 @@ Vue dynamique calculant en temps réel via des requêtes SQL :
 | Catégorie | Technologie |
 |-----------|-------------|
 | **Langage** | Java |
-| **UI / UX** | Material Components · Glassmorphism · Dark UI |
+| **UI / UX** | Material Components 1.11+, RecyclerView, ViewPager2 |
+| **Génération Code** | ZXing (QR Code) |
+| **Réseau** | Retrofit2, Gson |
 | **Base de données** | SQLite (local) |
-| **Navigation** | Android Intent System |
-| **Outils** | Android Studio · Database Inspector |
-
----
-
-## 🗺️ Roadmap
-
-### ✅ Réalisé
-- [x] Architecture et structure du projet
-- [x] Système d'authentification complet
-- [x] Base de données SQLite (Utilisateurs & Séances)
-- [x] Dashboard dynamique avec calculs en temps réel
-- [x] Système de réservation avec anti-doublons
-
-### 🔜 En cours / À venir
-- [ ] 🗺️ Intégration Google Maps pour la géolocalisation
-- [ ] 💬 Communication Coach (Intents Implicites)
-- [ ] 🔔 Notifications push
+| **Asynchrone** | AsyncTask, WorkManager, AlarmManager |
+| **Cartographie** | Google Play Services Maps |
 
 ---
 
@@ -128,6 +130,7 @@ Vue dynamique calculant en temps réel via des requêtes SQL :
 - Android Studio (Hedgehog ou plus récent)
 - SDK Android **API 34+**
 - JDK 17+
+- Une clé API Google Maps valide dans `AndroidManifest.xml` (actuellement fournie en dur pour le prototypage).
 
 ### Étapes
 
@@ -145,7 +148,7 @@ git clone [URL_DU_DEPOT]
 #    Run > Run 'app' (émulateur ou appareil physique)
 ```
 
-> ⚠️ **Note :** Assurez-vous qu'un émulateur Android (API 34+) est configuré ou qu'un appareil physique est connecté en mode débogage USB.
+> ⚠️ **Note :** Assurez-vous qu'un émulateur Android (API 34+) est configuré avec les services Google Play, ou qu'un appareil physique est connecté en mode débogage USB pour tester la carte Google Maps.
 
 ---
 
@@ -157,29 +160,23 @@ PulseFit/
 │   ├── src/main/
 │   │   ├── java/
 │   │   │   └── com.pulsefit/
-│   │   │       ├── activities/      # Login, Dashboard, Profil, Workouts
-│   │   │       ├── adapters/        # RecyclerView Adapters
-│   │   │       ├── database/        # SQLite Helper & DAOs
-│   │   │       └── models/          # User, Session, Reservation
+│   │   │       ├── activities/      # Landing, Login, Dashboard, Profile, Leaderboard, Map
+│   │   │       ├── adapters/        # SessionsAdapter, LeaderboardAdapter
+│   │   │       ├── database/        # DatabaseHelper (SQLite)
+│   │   │       ├── fragments/       # SessionsFragment
+│   │   │       ├── models/          # User, Session, Reservation, LeaderboardUser
+│   │   │       ├── network/         # RetrofitClient, ApiService, MockInterceptor
+│   │   │       ├── receivers/       # SessionReminderReceiver
+│   │   │       ├── utils/           # SessionManager
+│   │   │       ├── widget/          # PulseFitWidgetProvider
+│   │   │       └── workers/         # MigrationWorker
 │   │   └── res/
-│   │       ├── layout/              # Fichiers XML des écrans
-│   │       ├── drawable/            # Assets graphiques
-│   │       └── values/              # Thèmes, couleurs, strings
-│   └── build.gradle
+│   │       ├── layout/              # XML Layouts (Glassmorphism UI)
+│   │       ├── drawable/            # UI Assets (bg_auth, bg_pulsefit, etc.)
+│   │       └── values/              # themes.xml, colors.xml (Dark Navy, Neon Green)
+│   └── build.gradle.kts
 └── README.md
 ```
-
----
-
-## 🤝 Contribution
-
-Les contributions sont les bienvenues ! Pour proposer des améliorations :
-
-1. Forkez le projet
-2. Créez votre branche (`git checkout -b feature/ma-fonctionnalite`)
-3. Committez vos changements (`git commit -m 'feat: ajout de ma fonctionnalité'`)
-4. Poussez la branche (`git push origin feature/ma-fonctionnalite`)
-5. Ouvrez une **Pull Request**
 
 ---
 
