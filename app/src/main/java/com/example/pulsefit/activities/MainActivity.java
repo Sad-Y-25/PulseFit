@@ -71,6 +71,17 @@ public class MainActivity extends AppCompatActivity {
                 tvGreeting.setText("Prêt à transpirer, " + prenom + " ?");
             }
         }
+        
+        TextView tvAiQuote = findViewById(R.id.tvAiQuote);
+        String[] quotes = {
+            "Le succès commence par la discipline. Chaque séance vous rapproche de votre objectif.",
+            "Ne vous arrêtez pas quand ça fait mal, arrêtez-vous quand c'est fini.",
+            "Votre corps peut presque tout supporter. C'est votre esprit que vous devez convaincre.",
+            "L'échec n'est qu'une opportunité de recommencer plus intelligemment.",
+            "La seule mauvaise séance d'entraînement est celle qui n'a pas eu lieu."
+        };
+        int randomIndex = new java.util.Random().nextInt(quotes.length);
+        tvAiQuote.setText("\"" + quotes[randomIndex] + "\"");
 
         updateDashboardStats();
         // Déconnexion

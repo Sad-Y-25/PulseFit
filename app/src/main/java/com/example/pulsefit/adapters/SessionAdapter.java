@@ -69,8 +69,15 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
             holder.btnCancel.setVisibility(View.GONE);
             holder.btnBook.setVisibility(View.VISIBLE);
             holder.btnBook.setOnClickListener(v -> {
-                // Launch AsyncTask for booking
-                new BookSessionTask(context, session, v).execute();
+                new AlertDialog.Builder(context, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                        .setTitle("Confirmer la réservation")
+                        .setMessage("Voulez-vous vraiment réserver la séance : " + session.getTitre() + " ?")
+                        .setPositiveButton("Oui", (dialog, which) -> {
+                            // Launch AsyncTask for booking
+                            new BookSessionTask(context, session, v).execute();
+                        })
+                        .setNegativeButton("Non", null)
+                        .show();
             });
         }
 
@@ -145,8 +152,13 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
                     snackbar.setTextColor(ContextCompat.getColor(context, R.color.black));
                     snackbar.show();
 
-                    // Schedule a local notification for 5 seconds later
+                    // Schedule a local notification
                     scheduleReminder(context, session.getTitre());
+                    // Update widget in real time
+                    updateWidget(context);
+                    
+                    // Immediate notification
+                    sendImmediateNotification(context, "Réservation confirmée !", "Vous avez réservé la séance : " + session.getTitre());
                 } else {
                     Toast.makeText(context, "Vous avez déjà réservé cette séance.", Toast.LENGTH_SHORT).show();
                 }
@@ -166,21 +178,39 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
                         android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE
                 );
                 
-                // 5 seconds from now
-                long triggerAtMillis = System.currentTimeMillis() + 5000;
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault());
+                java.util.Date sessionDate = sdf.parse(session.getDate());
                 
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                    if (alarmManager.canScheduleExactAlarms()) {
-                        alarmManager.setExact(android.app.AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
-                    } else {
-                        alarmManager.set(android.app.AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                if (sessionDate != null) {
+                    long triggerAtMillis = sessionDate.getTime() - (30 * 60 * 1000);
+                    
+                    if (triggerAtMillis < System.currentTimeMillis()) {
+                        // For testing purposes, if they book a session that is already within 30 mins or past
+                        triggerAtMillis = System.currentTimeMillis() + 5000;
                     }
-                } else {
-                    alarmManager.setExact(android.app.AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                    
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                        if (alarmManager.canScheduleExactAlarms()) {
+                            alarmManager.setExact(android.app.AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                        } else {
+                            alarmManager.set(android.app.AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                        }
+                    } else {
+                        alarmManager.setExact(android.app.AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+        
+        private void updateWidget(Context context) {
+            android.content.Intent intent = new android.content.Intent(context, com.example.pulsefit.widget.PulseFitWidgetProvider.class);
+            intent.setAction(android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            int[] ids = android.appwidget.AppWidgetManager.getInstance(context)
+                    .getAppWidgetIds(new android.content.ComponentName(context, com.example.pulsefit.widget.PulseFitWidgetProvider.class));
+            intent.putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+            context.sendBroadcast(intent);
         }
     }
 
@@ -228,10 +258,38 @@ public class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.SessionV
                     snackbar.setBackgroundTint(ContextCompat.getColor(context, R.color.vert_neon));
                     snackbar.setTextColor(ContextCompat.getColor(context, R.color.black));
                     snackbar.show();
+                    
+                    updateWidget(context);
+                    
+                    sendImmediateNotification(context, "Réservation annulée", "Votre séance " + session.getTitre() + " a été annulée.");
                 } else {
                     Toast.makeText(context, "Erreur lors de l'annulation.", Toast.LENGTH_SHORT).show();
                 }
             }
         }
+        
+        private void updateWidget(Context context) {
+            android.content.Intent intent = new android.content.Intent(context, com.example.pulsefit.widget.PulseFitWidgetProvider.class);
+            intent.setAction(android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            int[] ids = android.appwidget.AppWidgetManager.getInstance(context)
+                    .getAppWidgetIds(new android.content.ComponentName(context, com.example.pulsefit.widget.PulseFitWidgetProvider.class));
+            intent.putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+            context.sendBroadcast(intent);
+        }
+    }
+
+    private static void sendImmediateNotification(Context context, String title, String message) {
+        android.app.NotificationManager notificationManager = (android.app.NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            android.app.NotificationChannel channel = new android.app.NotificationChannel("pulsefit_immediate", "PulseFit Alerts", android.app.NotificationManager.IMPORTANCE_HIGH);
+            notificationManager.createNotificationChannel(channel);
+        }
+        androidx.core.app.NotificationCompat.Builder builder = new androidx.core.app.NotificationCompat.Builder(context, "pulsefit_immediate")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setPriority(androidx.core.app.NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
+        notificationManager.notify((int) System.currentTimeMillis(), builder.build());
     }
 }

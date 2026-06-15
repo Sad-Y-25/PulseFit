@@ -184,7 +184,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="MOT DU COACH IA"
+                        android:text="LA CITATION DU JOUR"
                         android:textColor="@color/vert_neon"
                         android:textSize="12sp"
                         android:fontFamily="sans-serif-black"
@@ -195,7 +195,6 @@
                     android:id="@+id/tvAiQuote"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="&quot;Le succès commence par la discipline. Chaque séance vous rapproche de votre objectif.&quot;"
                     android:textColor="@color/white"
                     android:textSize="16sp"
                     android:textStyle="italic"/>
